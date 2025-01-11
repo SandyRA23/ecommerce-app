@@ -1,0 +1,146 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-deployment
+  namespace: default
+  labels:
+    app: inventory-deployment
+spec:
+  selector:
+    matchLabels:
+      app: inventory-deployment
+  template:
+    metadata:
+      labels:
+        app: inventory-deployment
+    spec:
+      containers:
+        - name: inventory-service
+          image: asia-southeast2-docker.pkg.dev/united-backbone-440005-f4/com-sra-ecommerce-app-repository/inventory.service:0.0.1-SNAPSHOT
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/postgres?currentSchema=inventory&binaryTransfer=true&reWriteBatchedInserts=true&stringtype=unspecified"
+            - name: SPRING_DATASOURCE_INITIALIZATION-MODE
+              value: "never"
+            - name: KAFKA-CONFIG_BOOTSTRAP-SERVERS
+              value: "gke-confluent-kafka-cp-kafka-headless:9092"
+            - name: KAFKA-CONFIG_SCHEMA-REGISTRY-URL
+              value: "http://gke-confluent-kafka-cp-schema-registry:8081"
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "1024Mi"
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: default
+  labels:
+    app: inventory-service
+spec:
+  selector:
+    app: inventory-deployment
+  ports:
+    - name: inventory-service-port
+      protocol: TCP
+      port: 8181
+  type: LoadBalancer
+  loadBalancerIP: ""
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: inventory-deployment-hpa
+  namespace: default
+  labels:
+    app: inventory-deployment
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: inventory-deployment
+    apiVersion: apps/v1
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 85
+---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: order-deployment
+#  namespace: default
+#  labels:
+#    app: order-deployment
+#spec:
+#  selector:
+#    matchLabels:
+#      app: order-deployment
+#  template:
+#    metadata:
+#      labels:
+#        app: order-deployment
+#    spec:
+#      containers:
+#        - name: order-service
+#          image: asia-southeast2-docker.pkg.dev/com-sra/com-sra-repository/order.service:1.0-SNAPSHOT
+#          env:
+#            - name: SPRING_DATASOURCE_URL
+#              value: "jdbc:postgresql://postgres-service:5433/postgres?currentSchema=order&binaryTransfer=true&reWriteBatchedInserts=true&stringtype=unspecified"
+#            - name: SPRING_DATASOURCE_INITIALIZATION-MODE
+#              value: "never"
+#            - name: KAFKA-CONFIG_BOOTSTRAP-SERVERS
+#              value: "gke-confluent-kafka-cp-kafka-headless:9092"
+#            - name: KAFKA-CONFIG_SCHEMA-REGISTRY-URL
+#              value: "http://gke-confluent-kafka-cp-schema-registry:8081"
+#          resources:
+#            limits:
+#              cpu: "500m"
+#              memory: "1024Mi"
+#            requests:
+#              cpu: "200m"
+#              memory: "256Mi"
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: order-service
+#  namespace: default
+#  labels:
+#    app: order-service
+#spec:
+#  selector:
+#    app: order-deployment
+#  ports:
+#    - name: order-service-port
+#      protocol: TCP
+#      port: 8182
+#  type: LoadBalancer
+#  loadBalancerIP: ""
+#---
+#apiVersion: autoscaling/v2beta1
+#kind: HorizontalPodAutoscaler
+#metadata:
+#  name: order-deployment-hpa
+#  namespace: default
+#  labels:
+#    app: order-deployment
+#spec:
+#  scaleTargetRef:
+#    kind: Deployment
+#    name: order-deployment
+#    apiVersion: apps/v1
+#  minReplicas: 2
+#  maxReplicas: 4
+#  metrics:
+#    - type: Resource
+#      resource:
+#        name: cpu
+#        targetAverageUtilization: 85
