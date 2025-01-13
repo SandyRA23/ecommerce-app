@@ -12,13 +12,8 @@ import static com.sra.inventory.service.domain.entity.Inventory.FAILURE_MESSAGE_
 @Service
 @Slf4j
 public class OrderResponseMessageListenerImpl implements OrderResponseMessageListener {
-    public void mutationCompleted(OrderResponse orderResponse) {
-        log.info("Publishing StockMutationCompletedEvent for product id: {}", orderResponse.getProductId());
-    }
 
-    public void mutationCancelled(OrderResponse orderResponse) {
-        log.info("Stock mutation is roll backed for product id: {} with failure messages: {}",
-                orderResponse.getProductId(),
-                String.join(FAILURE_MESSAGE_DELIMITER, orderResponse.getFailureMessage()));
+    public void listenAutoStockMutation(OrderResponse orderResponse) {
+        log.info("Publishing AutoStockMutation for product id: {}", orderResponse.getProductId());
     }
 }

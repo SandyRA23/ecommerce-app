@@ -8,7 +8,21 @@ import com.sra.inventory.service.domain.event.InventoryCreatedEvent;
 import java.util.List;
 
 public interface InventoryDomainService {
-    InventoryCreatedEvent validateAndInitiateInventory(Inventory inventory, DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher);
-    InventoryCreatedEvent stockMutation(Inventory inventory, DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher);
-    InventoryCancelledEvent cancelStockMutation(Inventory inventory, List<String> failureMessages, DomainEventPublisher<InventoryCancelledEvent> inventoryCancelledEventDomainEventPublisher);
+    InventoryCreatedEvent validateAndInitiateInventory(
+            Inventory inventory,
+            int stockQuantity,
+            int reservedQuantity,
+            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher
+    );
+
+    InventoryCreatedEvent stockMutation(
+            Inventory inventory,
+            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher
+    );
+
+    InventoryCancelledEvent cancelStockMutation(
+            Inventory inventory,
+            List<String> failureMessages,
+            DomainEventPublisher<InventoryCancelledEvent> inventoryCancelledEventDomainEventPublisher
+    );
 }

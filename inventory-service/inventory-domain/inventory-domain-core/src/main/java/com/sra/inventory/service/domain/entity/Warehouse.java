@@ -23,13 +23,6 @@ public class Warehouse extends BaseEntity<WarehouseId> {
         super.setId(warehouseId);
     }
 
-    public void updateWithNewDetails(String name, StreetAddress warehouseAddress, int capacity, int currentStockLevel) {
-        this.name = name;
-        this.warehouseAddress = warehouseAddress;
-        this.capacity = capacity;
-        this.currentStockLevel = currentStockLevel;
-    }
-
     public String getName() {
         return name;
     }

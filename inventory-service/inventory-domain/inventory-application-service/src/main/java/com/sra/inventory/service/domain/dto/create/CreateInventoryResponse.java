@@ -13,6 +13,16 @@ import java.util.UUID;
 public class CreateInventoryResponse {
     @NotNull
     private final UUID inventoryId;
+
+    @NotNull
+    private final UUID warehouseId;
+
+    @NotNull
+    private final UUID productId;
+
+    @NotNull
+    private final String inventoryStatus;
+
     @NotNull
     private final String message;
 }

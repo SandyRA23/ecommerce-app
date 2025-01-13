@@ -1,5 +1,6 @@
 package com.sra.inventory.service.domain.mapper;
 
+import com.sra.domain.valueobject.InventoryStatus;
 import com.sra.domain.valueobject.ProductId;
 import com.sra.domain.valueobject.WarehouseId;
 import com.sra.inventory.service.domain.dto.create.CreateInventoryCommand;
@@ -21,26 +22,19 @@ public class InventoryDataMapper {
         return Inventory.builder()
                 .productId(new ProductId(createInventoryCommand.getProductId()))
                 .warehouseId(new WarehouseId(createInventoryCommand.getWarehouseId()))
-                .items(inventoryItemsToInventoryEntities(createInventoryCommand.getItems()))
+                .stockQuantity(createInventoryCommand.getStockQuantity())
+                .reservedQuantity(createInventoryCommand.getReservedQuantity())
+                .inventoryStatus(InventoryStatus.CREATED)
                 .build();
     }
 
     public CreateInventoryResponse inventoryToCreateInventoryResponse(Inventory inventory, String message) {
         return CreateInventoryResponse.builder()
                 .inventoryId(inventory.getId().getValue())
+                .warehouseId(inventory.getWarehouseId().getValue())
+                .productId(inventory.getProductId().getValue())
+                .inventoryStatus(inventory.getInventoryStatus().toString())
                 .message(message)
                 .build();
-    }
-
-    private List<InventoryItem> inventoryItemsToInventoryEntities(
-            @NotNull List<com.sra.inventory.service.domain.dto.create.InventoryItem> inventoryItems) {
-        return inventoryItems.stream()
-                .map(inventoryItem ->
-                        InventoryItem.builder()
-                                .product(new Product(new ProductId(inventoryItem.getProductId())))
-                                .warehouse(new Warehouse(new WarehouseId(inventoryItem.getWarehouseId())))
-                                .stock(inventoryItem.getStock())
-                                .reservedStock(inventoryItem.getReservedStock())
-                                .build()).collect(Collectors.toList());
     }
 }

@@ -3,6 +3,8 @@ package com.sra.inventory.service.domain.entity;
 import com.sra.domain.entity.BaseEntity;
 import com.sra.domain.valueobject.ProductId;
 
+import java.util.UUID;
+
 public class Product extends BaseEntity<ProductId> {
     private String name;
     private String category;

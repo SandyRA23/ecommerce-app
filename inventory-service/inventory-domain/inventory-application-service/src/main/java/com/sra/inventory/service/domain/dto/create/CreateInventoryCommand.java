@@ -1,5 +1,6 @@
 package com.sra.inventory.service.domain.dto.create;
 
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,8 +15,13 @@ import java.util.UUID;
 public class CreateInventoryCommand {
     @NotNull
     private final UUID warehouseId;
+
     @NotNull
     private final UUID productId;
-    @NotNull
-    private final List<InventoryItem> items;
+
+    @Min(0)
+    private final int stockQuantity;
+
+    @Min(0)
+    private final int reservedQuantity;
 }
