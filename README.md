@@ -58,8 +58,6 @@ Prerequisites
 
 Installation
 - Clone the Repository:
-git clone https://github.com/your-repo/multi-warehouse-ecommerce.git
-cd multi-warehouse-ecommerce
 
 Build the Application:
 
