@@ -1,0 +1,31 @@
+{
+  "namespace": "com.sra.kafka.inventory.avro.model",
+  "type": "record",
+  "name": "ProductMutationResponseAvroModel",
+  "fields": [
+    {
+      "name": "productId",
+      "type": "string"
+    },
+    {
+      "name": "warehouseId",
+      "type": "string"
+    },
+    {
+      "name": "mutationStatus",
+      "type": "string"
+    },
+    {
+      "name": "mutationType",
+      "type": "string"
+    },
+    {
+      "name": "quantity",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

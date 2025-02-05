@@ -1,0 +1,34 @@
+{
+  "namespace": "com.sra.kafka.warehouse.avro.model",
+  "type": "record",
+  "name": "WarehouseRequestAvroModel",
+  "fields": [
+    {
+      "name": "warehouseId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "location",
+      "type": "string"
+    },
+    {
+      "name": "capacity",
+      "type": "int"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "WarehouseStatus",
+        "symbols": ["ACTIVE", "INACTIVE", "CLOSED"]
+      }
+    }
+  ]
+}

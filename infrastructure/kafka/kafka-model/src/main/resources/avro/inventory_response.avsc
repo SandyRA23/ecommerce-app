@@ -1,0 +1,47 @@
+{
+  "namespace": "com.sra.kafka.inventory.avro.model",
+  "type": "record",
+  "name": "InventoryResponseAvroModel",
+  "fields": [
+    {
+      "name": "inventoryId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "warehouseId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "productId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "quantity",
+      "type": "int"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "InventoryStatus",
+        "symbols": ["AVAILABLE", "OUT_OF_STOCK", "RESERVED"]
+      }
+    },
+    {
+      "name": "failureMessages",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    }
+  ]
+}

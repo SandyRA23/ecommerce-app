@@ -1,0 +1,32 @@
+{
+  "namespace": "com.sra.kafka.inventory.avro.model",
+  "type": "record",
+  "name": "InventoryRequestAvroModel",
+  "fields": [
+    {
+      "name": "inventoryId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "warehouseId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "productId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "quantity",
+      "type": "int"
+    }
+  ]
+}

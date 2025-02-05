@@ -1,6 +1,5 @@
 package com.sra.order.service.messaging.publisher.kafka;
 
-import com.sra.kafka.order.avro.model.PaymentRequestAvroModel;
 import com.sra.kafka.producer.KafkaMessageHelper;
 import com.sra.kafka.producer.service.KafkaProducer;
 import com.sra.order.service.domain.config.OrderServiceConfigData;

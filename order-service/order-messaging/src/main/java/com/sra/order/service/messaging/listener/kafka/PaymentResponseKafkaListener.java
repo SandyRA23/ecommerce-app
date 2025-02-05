@@ -1,8 +1,6 @@
 package com.sra.order.service.messaging.listener.kafka;
 
 import com.sra.kafka.consumer.KafkaConsumer;
-import com.sra.kafka.order.avro.model.PaymentResponseAvroModel;
-import com.sra.kafka.order.avro.model.PaymentStatus;
 import com.sra.order.service.domain.ports.input.message.listener.payment.PaymentResponseMessageListener;
 import com.sra.order.service.messaging.mapper.OrderMessagingDataMapper;
 import lombok.extern.slf4j.Slf4j;
