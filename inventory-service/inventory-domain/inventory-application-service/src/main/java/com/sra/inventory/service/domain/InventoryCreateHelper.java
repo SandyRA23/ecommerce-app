@@ -2,8 +2,6 @@ package com.sra.inventory.service.domain;
 
 import com.sra.inventory.service.domain.dto.create.CreateInventoryCommand;
 import com.sra.inventory.service.domain.entity.Inventory;
-import com.sra.inventory.service.domain.entity.Product;
-import com.sra.inventory.service.domain.entity.Warehouse;
 import com.sra.inventory.service.domain.event.InventoryCreatedEvent;
 import com.sra.inventory.service.domain.exception.InventoryDomainException;
 import com.sra.inventory.service.domain.mapper.InventoryDataMapper;
@@ -44,8 +42,6 @@ public class InventoryCreateHelper {
 
     @Transactional
     public InventoryCreatedEvent persistInventory(CreateInventoryCommand createInventoryCommand) {
-        checkWarehouse(createInventoryCommand.getWarehouseId());
-        checkProduct(createInventoryCommand.getProductId());
 
         Inventory inventory = inventoryDataMapper.createInventoryCommandToInventory(createInventoryCommand);
 
@@ -59,22 +55,6 @@ public class InventoryCreateHelper {
 
         log.info("Inventory is created with id: {}", inventoryCreatedEvent.getInventory().getId().getValue());
         return inventoryCreatedEvent;
-    }
-
-    private void checkWarehouse(UUID warehouseId) {
-        Optional<Warehouse> warehouse = warehouseRepository.findWarehouseById(warehouseId);
-        if (warehouse.isEmpty()) {
-            log.warn("Could not find warehouse with id: {}", warehouseId);
-            throw new InventoryDomainException("Could not find warehouse with id: " + warehouseId);
-        }
-    }
-
-    private void checkProduct(UUID productId) {
-        Optional<Product> product = productRepository.findProductById(productId);
-        if (product.isEmpty()) {
-            log.warn("Could not find product with id: {}", productId);
-            throw new InventoryDomainException("Could not find product with id: " + productId);
-        }
     }
 
     private Inventory saveInventory(Inventory inventory) {

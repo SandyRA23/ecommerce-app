@@ -6,14 +6,7 @@ import com.sra.domain.valueobject.WarehouseId;
 import com.sra.inventory.service.domain.dto.create.CreateInventoryCommand;
 import com.sra.inventory.service.domain.dto.create.CreateInventoryResponse;
 import com.sra.inventory.service.domain.entity.Inventory;
-import com.sra.inventory.service.domain.entity.InventoryItem;
-import com.sra.inventory.service.domain.entity.Product;
-import com.sra.inventory.service.domain.entity.Warehouse;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class InventoryDataMapper {

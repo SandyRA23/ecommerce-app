@@ -2,9 +2,9 @@ package com.sra.inventory.service.domain;
 
 import com.sra.domain.event.publisher.DomainEventPublisher;
 import com.sra.domain.valueobject.InventoryStatus;
+import com.sra.domain.valueobject.WarehouseId;
 import com.sra.inventory.service.domain.entity.Inventory;
-import com.sra.inventory.service.domain.event.InventoryCancelledEvent;
-import com.sra.inventory.service.domain.event.InventoryCreatedEvent;
+import com.sra.inventory.service.domain.event.*;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -19,46 +19,101 @@ public class InventoryDomainServiceImpl implements InventoryDomainService {
             Inventory inventory,
             int stockQuantity,
             int reservedQuantity,
-            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher) {
+            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventPublisher) {
 
         inventory.validateInventory();
         inventory.setStockQuantity(stockQuantity);
         inventory.setReservedQuantity(reservedQuantity);
         inventory.setInventoryStatus(InventoryStatus.CREATED);
 
-        // log.info("Inventory with id: {} is initiated", inventory.getId().getValue());
         return new InventoryCreatedEvent(
                 inventory,
                 ZonedDateTime.now(ZoneId.of(UTC)),
-                inventoryCreatedEventDomainEventPublisher
+                inventoryCreatedEventPublisher
         );
     }
 
     @Override
-    public InventoryCreatedEvent stockMutation(
+    public InventoryUpdatedEvent updateInventory(
             Inventory inventory,
-            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher) {
+            int newStockQuantity,
+            DomainEventPublisher<InventoryUpdatedEvent> inventoryUpdatedEventPublisher) {
 
-        inventory.stockMutation();
-        return new InventoryCreatedEvent(
+        inventory.setStockQuantity(newStockQuantity);
+
+        return new InventoryUpdatedEvent(
                 inventory,
                 ZonedDateTime.now(ZoneId.of(UTC)),
-                inventoryCreatedEventDomainEventPublisher
+                inventoryUpdatedEventPublisher
         );
     }
 
     @Override
-    public InventoryCancelledEvent cancelStockMutation(
+    public StockReservedEvent reserveStock(
             Inventory inventory,
+            int quantity,
+            DomainEventPublisher<StockReservedEvent> stockReservedEventPublisher) {
+
+        inventory.reserveStock(quantity);
+
+        return new StockReservedEvent(
+                inventory,
+                ZonedDateTime.now(ZoneId.of(UTC)),
+                stockReservedEventPublisher,
+                quantity
+        );
+    }
+
+    @Override
+    public StockReservationFailedEvent handleStockReservationFailure(
+            Inventory inventory,
+            int requestedQuantity,
             List<String> failureMessages,
-            DomainEventPublisher<InventoryCancelledEvent> inventoryCancelledEventDomainEventPublisher) {
+            DomainEventPublisher<StockReservationFailedEvent> stockReservationFailedEventPublisher) {
 
-        inventory.initCancelStockMutation(failureMessages);
-        inventory.cancelStockMutation(failureMessages);
-        return new InventoryCancelledEvent(
+        inventory.failStockReservation(failureMessages);
+
+        return new StockReservationFailedEvent(
                 inventory,
                 ZonedDateTime.now(ZoneId.of(UTC)),
-                inventoryCancelledEventDomainEventPublisher
+                stockReservationFailedEventPublisher,
+                requestedQuantity
+        );
+    }
+
+    @Override
+    public StockReleasedEvent releaseStock(
+            Inventory inventory,
+            int quantity,
+            DomainEventPublisher<StockReleasedEvent> stockReleasedEventPublisher) {
+
+        inventory.releaseStock(quantity);
+
+        return new StockReleasedEvent(
+                inventory,
+                ZonedDateTime.now(ZoneId.of(UTC)),
+                stockReleasedEventPublisher,
+                quantity
+        );
+    }
+
+    @Override
+    public StockMutatedEvent stockMutation(
+            Inventory inventory,
+            WarehouseId sourceWarehouseId,
+            WarehouseId destinationWarehouseId,
+            int quantity,
+            DomainEventPublisher<StockMutatedEvent> stockMutatedEventPublisher) {
+
+        inventory.mutateStock(sourceWarehouseId, destinationWarehouseId, quantity);
+
+        return new StockMutatedEvent(
+                inventory,
+                ZonedDateTime.now(ZoneId.of(UTC)),
+                sourceWarehouseId,
+                destinationWarehouseId,
+                stockMutatedEventPublisher,
+                quantity
         );
     }
 }

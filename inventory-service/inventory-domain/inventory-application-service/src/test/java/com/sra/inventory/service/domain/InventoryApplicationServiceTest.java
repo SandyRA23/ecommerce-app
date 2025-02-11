@@ -7,10 +7,6 @@ import com.sra.domain.valueobject.WarehouseId;
 import com.sra.inventory.service.domain.dto.create.CreateInventoryCommand;
 import com.sra.inventory.service.domain.dto.create.CreateInventoryResponse;
 import com.sra.inventory.service.domain.entity.Inventory;
-import com.sra.inventory.service.domain.entity.Product;
-import com.sra.inventory.service.domain.entity.Warehouse;
-import com.sra.inventory.service.domain.event.InventoryCreatedEvent;
-import com.sra.inventory.service.domain.exception.InventoryDomainException;
 import com.sra.inventory.service.domain.mapper.InventoryDataMapper;
 import com.sra.inventory.service.domain.ports.input.service.InventoryApplicationService;
 import com.sra.inventory.service.domain.ports.output.repository.InventoryRepository;
@@ -20,7 +16,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;

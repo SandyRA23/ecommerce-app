@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 public class InventoryCreateCommandHandler {
     private final InventoryCreateHelper inventoryCreateHelper;
     private final InventoryDataMapper inventoryDataMapper;
-    private final InventoryMessagePublisher inventoryMessagePublisher;
+    private final InventoryMessagePublisher<InventoryCreatedEvent> inventoryMessagePublisher;
 
     public InventoryCreateCommandHandler(InventoryCreateHelper inventoryCreateHelper,
                                          InventoryDataMapper inventoryDataMapper,
-                                         InventoryMessagePublisher inventoryMessagePublisher) {
+                                         InventoryMessagePublisher<InventoryCreatedEvent> inventoryMessagePublisher) {
         this.inventoryCreateHelper = inventoryCreateHelper;
         this.inventoryDataMapper = inventoryDataMapper;
         this.inventoryMessagePublisher = inventoryMessagePublisher;
@@ -26,8 +26,11 @@ public class InventoryCreateCommandHandler {
     public CreateInventoryResponse createInventory(CreateInventoryCommand createInventoryCommand) {
         InventoryCreatedEvent inventoryCreatedEvent = inventoryCreateHelper.persistInventory(createInventoryCommand);
         log.info("Inventory is created with id: {}", inventoryCreatedEvent.getInventory().getId().getValue());
-        inventoryMessagePublisher.publish(inventoryCreatedEvent);
-        return inventoryDataMapper.inventoryToCreateInventoryResponse(inventoryCreatedEvent.getInventory(),
-                "Inventory created successfully");
+        inventoryMessagePublisher.publishEvent(inventoryCreatedEvent);
+
+        return inventoryDataMapper.inventoryToCreateInventoryResponse(
+                inventoryCreatedEvent.getInventory(),
+                "Inventory created successfully"
+        );
     }
 }

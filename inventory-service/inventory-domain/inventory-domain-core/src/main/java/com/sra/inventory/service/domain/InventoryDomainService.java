@@ -1,9 +1,9 @@
 package com.sra.inventory.service.domain;
 
 import com.sra.domain.event.publisher.DomainEventPublisher;
+import com.sra.domain.valueobject.WarehouseId;
 import com.sra.inventory.service.domain.entity.Inventory;
-import com.sra.inventory.service.domain.event.InventoryCancelledEvent;
-import com.sra.inventory.service.domain.event.InventoryCreatedEvent;
+import com.sra.inventory.service.domain.event.*;
 
 import java.util.List;
 
@@ -15,14 +15,36 @@ public interface InventoryDomainService {
             DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher
     );
 
-    InventoryCreatedEvent stockMutation(
+    InventoryUpdatedEvent updateInventory(
             Inventory inventory,
-            DomainEventPublisher<InventoryCreatedEvent> inventoryCreatedEventDomainEventPublisher
+            int newStockQuantity,
+            DomainEventPublisher<InventoryUpdatedEvent> inventoryUpdatedEventPublisher
     );
 
-    InventoryCancelledEvent cancelStockMutation(
+    StockReservedEvent reserveStock(
             Inventory inventory,
+            int quantity,
+            DomainEventPublisher<StockReservedEvent> stockReservedEventPublisher
+    );
+
+    StockReservationFailedEvent handleStockReservationFailure(
+            Inventory inventory,
+            int requestedQuantity,
             List<String> failureMessages,
-            DomainEventPublisher<InventoryCancelledEvent> inventoryCancelledEventDomainEventPublisher
+            DomainEventPublisher<StockReservationFailedEvent> stockReservationFailedEventPublisher
+    );
+
+    StockReleasedEvent releaseStock(
+            Inventory inventory,
+            int quantity,
+            DomainEventPublisher<StockReleasedEvent> stockReleasedEventPublisher
+    );
+
+    StockMutatedEvent stockMutation(
+            Inventory inventory,
+            WarehouseId sourceWarehouseId,
+            WarehouseId destinationWarehouseId,
+            int movedQuantity,
+            DomainEventPublisher<StockMutatedEvent> stockMutatedEventPublisher
     );
 }

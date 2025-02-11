@@ -2,96 +2,33 @@ package com.sra.inventory.service.domain.entity;
 
 import com.sra.domain.entity.AggregateRoot;
 import com.sra.domain.valueobject.*;
-import com.sra.inventory.service.domain.exception.InventoryDomainException;
 import com.sra.domain.valueobject.InventoryId;
 
 import java.util.List;
 
 public class Inventory extends AggregateRoot<InventoryId> {
-    private final WarehouseId warehouseId;
+
     private final ProductId productId;
+    private WarehouseId warehouseId;
     private int stockQuantity;
     private int reservedQuantity;
     private InventoryStatus inventoryStatus;
-    private List<String> failureMessages;
-
-    public static final String FAILURE_MESSAGE_DELIMITER = ",";
-
-    public void validateInventory() {
-        validateInitialInventory();
-        validateStockQuantities();
-    }
-
-    public void stockMutation() {
-        if (inventoryStatus != InventoryStatus.APPROVED) {
-            throw new InventoryDomainException("Inventory is not in the correct state for stock mutation!");
-        }
-        inventoryStatus = InventoryStatus.MUTATING;
-    }
-
-    public void initCancelStockMutation(List<String> failureMessages) {
-        if (inventoryStatus != InventoryStatus.MUTATING) {
-            throw new InventoryDomainException("Inventory is not in the correct state for initCancel stock mutation!");
-        }
-        inventoryStatus = InventoryStatus.CANCELLING;
-        updateFailureMessages(failureMessages);
-    }
-
-    public void cancelStockMutation(List<String> failureMessages) {
-        if (!(inventoryStatus == InventoryStatus.MUTATING || inventoryStatus == InventoryStatus.PENDING)) {
-            throw new InventoryDomainException("Inventory is not in the correct state for canceling stock mutation!");
-        }
-        inventoryStatus = InventoryStatus.CANCELLED;
-        updateFailureMessages(failureMessages);
-    }
-
-    private void updateFailureMessages(List<String> failureMessages) {
-        if (this.failureMessages != null && failureMessages != null) {
-            this.failureMessages.addAll(failureMessages.stream().filter(message -> !message.isEmpty()).toList());
-        }
-        if (this.failureMessages == null) {
-            this.failureMessages = failureMessages;
-        }
-    }
-
-    private void validateInitialInventory() {
-        if (inventoryStatus == null || getId() == null) {
-            throw new InventoryDomainException("Inventory is not in the correct state for initialization!");
-        }
-    }
-
-    private void validateStockQuantities() {
-        if (stockQuantity < 0) {
-            throw new InventoryDomainException("Stock quantity cannot be negative!");
-        }
-        if (reservedQuantity < 0) {
-            throw new InventoryDomainException("Reserved quantity cannot be negative!");
-        }
-        if (reservedQuantity > stockQuantity) {
-            throw new InventoryDomainException("Reserved quantity cannot exceed available stock!");
-        }
-    }
 
     private Inventory(Builder builder) {
         super.setId(builder.inventoryId);
-        warehouseId = builder.warehouseId;
-        productId = builder.productId;
+        this.productId = builder.productId;
+        this.warehouseId = builder.warehouseId;
         this.stockQuantity = builder.stockQuantity;
         this.reservedQuantity = builder.reservedQuantity;
-        inventoryStatus = builder.inventoryStatus;
-        failureMessages = builder.failureMessages;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public WarehouseId getWarehouseId() {
-        return warehouseId;
+        this.inventoryStatus = builder.inventoryStatus;
     }
 
     public ProductId getProductId() {
         return productId;
+    }
+
+    public WarehouseId getWarehouseId() {
+        return warehouseId;
     }
 
     public int getStockQuantity() {
@@ -106,24 +43,11 @@ public class Inventory extends AggregateRoot<InventoryId> {
         return inventoryStatus;
     }
 
-    public List<String> getFailureMessages() {
-        return failureMessages;
-    }
-
     public void setStockQuantity(int stockQuantity) {
-        if (stockQuantity < 0) {
-            throw new InventoryDomainException("Stock quantity cannot be negative!");
-        }
         this.stockQuantity = stockQuantity;
     }
 
     public void setReservedQuantity(int reservedQuantity) {
-        if (reservedQuantity < 0) {
-            throw new InventoryDomainException("Reserved quantity cannot be negative!");
-        }
-        if (reservedQuantity > this.stockQuantity) {
-            throw new InventoryDomainException("Reserved quantity cannot exceed available stock!");
-        }
         this.reservedQuantity = reservedQuantity;
     }
 
@@ -131,55 +55,104 @@ public class Inventory extends AggregateRoot<InventoryId> {
         this.inventoryStatus = inventoryStatus;
     }
 
-    public static final class Builder {
+    public void validateInventory() {
+        if (stockQuantity < 0 || reservedQuantity < 0) {
+            throw new IllegalStateException("Stock quantity and reserved quantity cannot be negative.");
+        }
+    }
+
+    public void reserveStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Reserved quantity must be greater than zero.");
+        }
+        if (quantity > stockQuantity) {
+            throw new IllegalStateException("Not enough stock available to reserve.");
+        }
+        this.stockQuantity -= quantity;
+        this.reservedQuantity += quantity;
+        this.inventoryStatus = InventoryStatus.RESERVED;
+    }
+
+    public void releaseStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Released quantity must be greater than zero.");
+        }
+        if (quantity > reservedQuantity) {
+            throw new IllegalStateException("Not enough reserved stock to release.");
+        }
+        this.reservedQuantity -= quantity;
+        this.stockQuantity += quantity;
+        this.inventoryStatus = InventoryStatus.AVAILABLE;
+    }
+
+    public void failStockReservation(List<String> failureMessages) {
+        if (!failureMessages.isEmpty()) {
+            this.inventoryStatus = InventoryStatus.FAILED;
+        }
+    }
+
+    public void mutateStock(WarehouseId sourceWarehouseId, WarehouseId destinationWarehouseId, int movedQuantity) {
+        if (movedQuantity <= 0) {
+            throw new IllegalArgumentException("Mutated quantity must be greater than zero.");
+        }
+        if (!this.warehouseId.equals(sourceWarehouseId)) {
+            throw new IllegalStateException("Inventory is not in the source warehouse.");
+        }
+        if (this.stockQuantity < movedQuantity) {
+            throw new IllegalStateException("Not enough stock to mutate.");
+        }
+
+        this.stockQuantity -= movedQuantity;
+
+        this.warehouseId = destinationWarehouseId;
+
+        this.inventoryStatus = InventoryStatus.MUTATED;
+    }
+
+    public static class Builder {
         private InventoryId inventoryId;
-        private WarehouseId warehouseId;
         private ProductId productId;
+        private WarehouseId warehouseId;
         private int stockQuantity;
         private int reservedQuantity;
         private InventoryStatus inventoryStatus;
-        private List<String> failureMessages;
 
-        private Builder() {
-        }
-
-        public Builder inventoryId(InventoryId val) {
-            inventoryId = val;
+        public Builder inventoryId(InventoryId inventoryId) {
+            this.inventoryId = inventoryId;
             return this;
         }
 
-        public Builder warehouseId(WarehouseId val) {
-            warehouseId = val;
+        public Builder productId(ProductId productId) {
+            this.productId = productId;
             return this;
         }
 
-        public Builder productId(ProductId val) {
-            productId = val;
+        public Builder warehouseId(WarehouseId warehouseId) {
+            this.warehouseId = warehouseId;
             return this;
         }
 
-        public Builder stockQuantity(int val) {
-            stockQuantity = val;
+        public Builder stockQuantity(int stockQuantity) {
+            this.stockQuantity = stockQuantity;
             return this;
         }
 
-        public Builder reservedQuantity(int val) {
-            reservedQuantity = val;
+        public Builder reservedQuantity(int reservedQuantity) {
+            this.reservedQuantity = reservedQuantity;
             return this;
         }
 
-        public Builder inventoryStatus(InventoryStatus val) {
-            inventoryStatus = val;
-            return this;
-        }
-
-        public Builder failureMessages(List<String> val) {
-            failureMessages = val;
+        public Builder inventoryStatus(InventoryStatus inventoryStatus) {
+            this.inventoryStatus = inventoryStatus;
             return this;
         }
 
         public Inventory build() {
-            return new Inventory(this);
+            Inventory inventory = new Inventory(this);
+            inventory.setStockQuantity(stockQuantity);
+            inventory.setReservedQuantity(reservedQuantity);
+            inventory.setInventoryStatus(InventoryStatus.CREATED);
+            return inventory;
         }
     }
 }
